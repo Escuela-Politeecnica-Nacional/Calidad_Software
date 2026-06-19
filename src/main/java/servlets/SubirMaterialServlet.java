@@ -82,19 +82,57 @@ public class SubirMaterialServlet extends HttpServlet {
             req.getRequestDispatcher(VIEW).forward(req, resp);
             return;
         }
-
-        String nombreArchivoOriginal = archivoPart.getSubmittedFileName();
-        String extension = ArchivoMaterialValidator.obtenerExtension(nombreArchivoOriginal);
-
-        if (!ArchivoMaterialValidator.esExtensionPermitida(extension)) {
-            req.setAttribute("error", "Extensión no permitida");
+        if (descripcion == null || descripcion.isBlank()) {
+            req.setAttribute("error", "La descripción es obligatoria.");
+            req.setAttribute("categorias", CategoriaMaterial.values());
+            prepararMateriasYPerfil(req, (Usuario) session.getAttribute("usuarioLogueado"));
+            req.getRequestDispatcher(VIEW).forward(req, resp);
+            return;
+        }
+        if (materiaCodigo.isBlank()) {
+            req.setAttribute("error", "Debes seleccionar una materia para publicar el material.");
             req.setAttribute("categorias", CategoriaMaterial.values());
             prepararMateriasYPerfil(req, (Usuario) session.getAttribute("usuarioLogueado"));
             req.getRequestDispatcher(VIEW).forward(req, resp);
             return;
         }
 
-        String uploadsDir = getServletContext().getRealPath("") + File.separator + "uploads" + File.separator + "materiales";
+        Double costo;
+        try {
+            costo = Double.parseDouble(ServletUtils.value(precioStr));
+            if (costo < 0) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException ex) {
+            req.setAttribute("error", "El precio debe ser un número mayor o igual a cero.");
+            req.setAttribute("categorias", CategoriaMaterial.values());
+            prepararMateriasYPerfil(req, (Usuario) session.getAttribute("usuarioLogueado"));
+            req.getRequestDispatcher(VIEW).forward(req, resp);
+            return;
+        }
+
+        if (archivoPart == null || archivoPart.getSize() == 0 || archivoPart.getSubmittedFileName() == null
+                || archivoPart.getSubmittedFileName().isBlank()) {
+            req.setAttribute("error", "Debes adjuntar un archivo PDF.");
+            req.setAttribute("categorias", CategoriaMaterial.values());
+            prepararMateriasYPerfil(req, (Usuario) session.getAttribute("usuarioLogueado"));
+            req.getRequestDispatcher(VIEW).forward(req, resp);
+            return;
+        }
+
+        String nombreArchivoOriginal = archivoPart.getSubmittedFileName();
+        String extension = ArchivoMaterialValidator.obtenerExtension(nombreArchivoOriginal);
+
+        if (!".pdf".equalsIgnoreCase(extension)) {
+            req.setAttribute("error", "Para garantizar la vista previa y lectura en plataforma, el archivo debe ser PDF.");
+            req.setAttribute("categorias", CategoriaMaterial.values());
+            prepararMateriasYPerfil(req, (Usuario) session.getAttribute("usuarioLogueado"));
+            req.getRequestDispatcher(VIEW).forward(req, resp);
+            return;
+        }
+
+        String uploadsDir = getServletContext().getRealPath("")
+                + File.separator + "WEB-INF" + File.separator + "uploads" + File.separator + "materiales";
         Files.createDirectories(Paths.get(uploadsDir));
         String nombreArchivoGuardado = UUID.randomUUID() + extension;
         String rutaArchivo = uploadsDir + File.separator + nombreArchivoGuardado;
@@ -104,12 +142,6 @@ public class SubirMaterialServlet extends HttpServlet {
             input.transferTo(output);
         }
 
-        Double costo = 0.0;
-        if (precioStr != null && !precioStr.isBlank()) {
-            try {
-                costo = Double.parseDouble(precioStr);
-            } catch (NumberFormatException ignored) {}
-        }
         Usuario u = (Usuario) session.getAttribute("usuarioLogueado");
         String nombreUsuario = "Tutor";
 
@@ -119,7 +151,7 @@ public class SubirMaterialServlet extends HttpServlet {
             try {
                 tutorRef = em.find(schemas.Tutor.class, u.getIdPersona());
                 if (tutorRef != null && tutorRef.getNombre() != null) {
-                    nombreUsuario = tutorRef.getNombre();
+                    nombreUsuario = nombreCompleto(tutorRef);
                 }
             } finally {
                 em.close();
@@ -137,9 +169,16 @@ public class SubirMaterialServlet extends HttpServlet {
         }
 
         String idMateriaVal = materiaCodigo.isBlank() ? categoria : materiaCodigo;
-        String nombreMateriaVal = MateriasCatalogo.buscarPorCodigo(materiaCodigo)
+        MateriasCatalogo.Opcion materiaOpcion = tutorRef != null && tutorRef.getCarrera() != null
+                ? MateriasCatalogo.porCarrera(tutorRef.getCarrera()).stream()
+                        .filter(opcion -> opcion.getCodigo().equalsIgnoreCase(materiaCodigo))
+                        .findFirst()
+                        .orElse(null)
+                : MateriasCatalogo.buscarPorCodigo(materiaCodigo).orElse(null);
+        String nombreMateriaVal = java.util.Optional.ofNullable(materiaOpcion)
                 .map(MateriasCatalogo.Opcion::getNombre)
                 .orElse(categoria != null && !categoria.isBlank() ? categoria : materiaCodigo);
+        CategoriaMaterial categoriaMaterial = resolverCategoria(categoria);
 
         Material material = Material.builder()
                 .titulo(titulo)
@@ -147,12 +186,17 @@ public class SubirMaterialServlet extends HttpServlet {
                 .nombreArchivo(nombreArchivoGuardado)
                 .idMateria(idMateriaVal)
                 .nombreMateria(nombreMateriaVal)
-                .rutaArchivo("uploads/materiales/" + nombreArchivoGuardado)
+                .rutaArchivo("WEB-INF/uploads/materiales/" + nombreArchivoGuardado)
                 .tipoArchivo(extension.substring(1))
                 .costo(costo)
                 .estado(EstadoMaterial.PENDIENTE)
                 .fechaEnvio(java.time.LocalDateTime.now())
                 .usuario(nombreUsuario)
+                .idTutor(tutorRef == null ? null : tutorRef.getId())
+                .carrera(materiaOpcion != null ? materiaOpcion.getCarrera()
+                        : tutorRef == null ? null : tutorRef.getCarrera())
+                .semestre(materiaOpcion == null ? null : materiaOpcion.getSemestre())
+                .categoria(categoriaMaterial)
                 .build();
 
         new MaterialRepository().save(material);
@@ -169,5 +213,24 @@ public class SubirMaterialServlet extends HttpServlet {
             return false;
         }
         return true;
+    }
+
+    private CategoriaMaterial resolverCategoria(String nombre) {
+        if (nombre == null) {
+            return null;
+        }
+        for (CategoriaMaterial categoria : CategoriaMaterial.values()) {
+            if (categoria.name().equalsIgnoreCase(nombre) || categoria.getNombre().equalsIgnoreCase(nombre)) {
+                return categoria;
+            }
+        }
+        return null;
+    }
+
+    private String nombreCompleto(schemas.Tutor tutor) {
+        return java.util.stream.Stream.of(
+                        tutor.getNombre(), tutor.getSegundoNombre(), tutor.getApellido(), tutor.getSegundoApellido())
+                .filter(value -> value != null && !value.isBlank())
+                .collect(java.util.stream.Collectors.joining(" "));
     }
 }

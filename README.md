@@ -15,9 +15,9 @@ El proyecto lee credenciales desde `.env` o variables de entorno del sistema.
 Variables necesarias para Supabase/PostgreSQL:
 
 ```powershell
-DB_URL=jdbc:postgresql://db.yszzewnynkvmkeygvksh.supabase.co:5432/postgres?sslmode=require
-DB_USER=postgres
-DB_PASSWORD=owlshare2026
+DB_URL=jdbc:postgresql://TU_HOST:5432/TU_BASE?sslmode=require
+DB_USER=TU_USUARIO
+DB_PASSWORD=TU_PASSWORD
 DB_DRIVER=org.postgresql.Driver
 HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
 HIBERNATE_HBM2DDL_AUTO=update

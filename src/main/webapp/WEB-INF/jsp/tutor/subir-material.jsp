@@ -196,7 +196,7 @@
 
                             <%-- Materia --%>
                             <div class="flex flex-col gap-1">
-                                <label for="materia" class="text-sm font-bold text-on-surface px-1">Materia</label>
+                                <label for="materia" class="text-sm font-bold text-on-surface px-1">Materia <span class="text-error">*</span></label>
                                 <select id="materia" name="materia"
                                         class="w-full bg-surface-container-highest border-0 rounded-t-lg py-3 px-4 focus:ring-2 focus:ring-primary text-on-surface appearance-none">
                                     <option value="">-- Seleccionar materia --</option>
@@ -204,6 +204,10 @@
                                         <option value="${m.codigo}"><c:out value="${m.nombre}"/> (<c:out value="${m.codigo}"/>)</option>
                                     </c:forEach>
                                 </select>
+                                <div id="err-materia" class="field-error items-center gap-1 text-error text-xs px-1 mt-0.5">
+                                    <span class="material-symbols-outlined text-sm">error</span>
+                                    Debes seleccionar una materia.
+                                </div>
                             </div>
 
                             <%-- Precio --%>
@@ -323,6 +327,7 @@
             titulo:      { el: document.getElementById('titulo'),      err: document.getElementById('err-titulo') },
             descripcion: { el: document.getElementById('descripcion'), err: document.getElementById('err-descripcion') },
             costo:       { el: document.getElementById('costo'),       err: document.getElementById('err-costo') },
+            materia:     { el: document.getElementById('materia'),     err: document.getElementById('err-materia') },
             archivo:     { el: document.getElementById('archivo'),     err: document.getElementById('err-archivo') }
         };
 
@@ -339,13 +344,14 @@
         function validateTitulo()      { return fields.titulo.el.value.trim() !== ''; }
         function validateDescripcion() { return fields.descripcion.el.value.trim() !== ''; }
         function validateCosto()       { const v = fields.costo.el.value; return v !== '' && parseFloat(v) >= 0; }
+        function validateMateria()     { return fields.materia.el.value.trim() !== ''; }
         function validateArchivo()     { return fields.archivo.el.files.length > 0; }
 
         Object.keys(fields).forEach(key => {
             const input = fields[key].el;
             const event = (key === 'archivo') ? 'change' : 'input';
             input.addEventListener(event, () => {
-                const validators = { titulo: validateTitulo, descripcion: validateDescripcion, costo: validateCosto, archivo: validateArchivo };
+                const validators = { titulo: validateTitulo, descripcion: validateDescripcion, costo: validateCosto, materia: validateMateria, archivo: validateArchivo };
                 showError(key, !validators[key]());
             });
         });
@@ -355,6 +361,7 @@
                 titulo:      validateTitulo(),
                 descripcion: validateDescripcion(),
                 costo:       validateCosto(),
+                materia:     validateMateria(),
                 archivo:     validateArchivo()
             };
             const allValid = Object.entries(checks).every(([key, ok]) => { showError(key, !ok); return ok; });

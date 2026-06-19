@@ -1,6 +1,5 @@
 package services;
 
-import Enums.EstadoMaterial;
 import Enums.Estados;
 import Enums.Rol;
 import repositories.UsuarioRepository;
@@ -32,7 +31,7 @@ public class EstudianteService {
     }
 
     public boolean puedeDescargarArchivo(Material material) {
-        return material != null && material.getEstado() == EstadoMaterial.APROBADO;
+        return false;
     }
 
     public boolean validarActualizacionDatos(String nombre, String correo) {

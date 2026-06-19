@@ -34,10 +34,10 @@ class EstudianteServiceTest {
     }
 
     @Test
-    void puedeDescargarArchivo_deberiaRetornarTrue_siMaterialAprobado() {
+    void puedeDescargarArchivo_deberiaRetornarFalse_aunqueMaterialEsteAprobado() {
         Material material = new Material();
         material.setEstado(EstadoMaterial.APROBADO);
-        assertTrue(service.puedeDescargarArchivo(material));
+        assertFalse(service.puedeDescargarArchivo(material));
     }
 
     @Test

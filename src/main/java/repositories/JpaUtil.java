@@ -18,45 +18,28 @@ public final class JpaUtil {
     private static Map<String, Object> buildOverrides() {
         Map<String, Object> overrides = new LinkedHashMap<>();
 
-        // Configuración quemada (anteriormente en .env)
-        String dbUrl = "jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require";
-        String dbUser = "postgres.yszzewnynkvmkeygvksh";
-        String dbPassword = "owlshare2026";
-        String dbDriver = "org.postgresql.Driver";
-        String hibernateDialect = "org.hibernate.dialect.PostgreSQLDialect";
-        String hbm2ddlAuto = "update";
-        String showSql = "true";
+        putIfPresent(overrides, "jakarta.persistence.jdbc.driver", env("DB_DRIVER"));
+        putIfPresent(overrides, "jakarta.persistence.jdbc.url", env("DB_URL"));
+        putIfPresent(overrides, "jakarta.persistence.jdbc.user", env("DB_USER"));
+        putIfPresent(overrides, "jakarta.persistence.jdbc.password", env("DB_PASSWORD"));
+        putIfPresent(overrides, "hibernate.dialect", env("HIBERNATE_DIALECT"));
+        putIfPresent(overrides, "hibernate.hbm2ddl.auto", env("HIBERNATE_HBM2DDL_AUTO"));
+        putIfPresent(overrides, "hibernate.show_sql", env("HIBERNATE_SHOW_SQL"));
 
-        overrides.put("jakarta.persistence.jdbc.driver", dbDriver);
-        overrides.put("jakarta.persistence.jdbc.url", dbUrl);
-        overrides.put("jakarta.persistence.jdbc.user", dbUser);
-        overrides.put("jakarta.persistence.jdbc.password", dbPassword);
-        overrides.put("hibernate.dialect", hibernateDialect);
-        overrides.put("hibernate.hbm2ddl.auto", hbm2ddlAuto);
-        overrides.put("hibernate.show_sql", showSql);
-
-        LOGGER.info("JPA configurado con credenciales internas (hardcoded).");
+        LOGGER.info(overrides.isEmpty()
+                ? "JPA usando la configuración local de persistence.xml."
+                : "JPA configurado mediante variables de entorno.");
 
         return overrides;
     }
 
     private static String env(String key) {
-        // Mapeo de claves para mantener compatibilidad con métodos existentes
-        switch (key) {
-            case "DB_URL": return "jdbc:postgresql://aws-1-us-west-2.pooler.supabase.com:5432/postgres?sslmode=require";
-            case "DB_USER": return "postgres.yszzewnynkvmkeygvksh";
-            case "DB_PASSWORD": return "owlshare2026";
-            case "DB_DRIVER": return "org.postgresql.Driver";
-            case "HIBERNATE_DIALECT": return "org.hibernate.dialect.PostgreSQLDialect";
-            case "HIBERNATE_HBM2DDL_AUTO": return "update";
-            case "HIBERNATE_SHOW_SQL": return "true";
-            case "ADMIN_EMAIL": return "admin@olwshare.com";
-            case "ADMIN_PASSWORD": return "OlwShare2026!";
-            case "ADMIN_NOMBRE": return "Administrador";
-            case "ADMIN_APELLIDO": return "Sistema";
-            default:
-                String fromSystem = System.getenv(key);
-                return fromSystem == null ? "" : fromSystem.trim();
+        return firstNonBlank(System.getProperty(key), System.getenv(key));
+    }
+
+    private static void putIfPresent(Map<String, Object> overrides, String property, String value) {
+        if (value != null && !value.isBlank()) {
+            overrides.put(property, value.trim());
         }
     }
 
@@ -67,11 +50,6 @@ public final class JpaUtil {
             }
         }
         return "";
-    }
-
-    private static String safeDbUrl(String dbUrl) {
-        int paramsIndex = dbUrl.indexOf('?');
-        return paramsIndex >= 0 ? dbUrl.substring(0, paramsIndex) : dbUrl;
     }
 
     public static String getConfigValue(String key) {

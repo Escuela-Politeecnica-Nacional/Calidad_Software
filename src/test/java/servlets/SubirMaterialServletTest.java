@@ -73,10 +73,12 @@ public class SubirMaterialServletTest {
         when(request.getParameter("titulo")).thenReturn("Material de Prueba");
         when(request.getParameter("descripcion")).thenReturn("Descripcion de prueba");
         when(request.getParameter("nombreMateria")).thenReturn("FISICA");
+        when(request.getParameter("materia")).thenReturn("ICCD244");
         when(request.getParameter("costo")).thenReturn("10.0");
 
         when(request.getPart("archivo")).thenReturn(filePart);
         when(filePart.getSubmittedFileName()).thenReturn("test.pdf");
+        when(filePart.getSize()).thenReturn(9L);
         when(filePart.getInputStream()).thenReturn(new ByteArrayInputStream("contenido".getBytes()));
 
         when(servletContext.getRealPath("")).thenReturn(tempDir.toString());
@@ -102,6 +104,8 @@ public class SubirMaterialServletTest {
         when(request.getParameter("titulo")).thenReturn("Material de Prueba");
         when(request.getParameter("descripcion")).thenReturn("Descripcion de prueba");
         when(request.getParameter("nombreMateria")).thenReturn("FISICA");
+        when(request.getParameter("materia")).thenReturn("ICCD244");
+        when(request.getParameter("costo")).thenReturn("10.0");
 
         when(request.getPart("archivo")).thenReturn(filePart);
         when(filePart.getSubmittedFileName()).thenReturn(""); // No hay archivo seleccionado

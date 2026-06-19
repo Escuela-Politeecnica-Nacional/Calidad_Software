@@ -1,6 +1,7 @@
 package repositories;
 
 import Enums.EstadoMaterial;
+import Enums.Carrera;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import schemas.Material;
@@ -78,5 +79,23 @@ public class MaterialRepository {
                     .setParameter("usuario", nombreUsuario)
                     .getResultList();
         }
+    }
+
+    public List<Material> findMarketplace(Carrera carrera, String codigoMateria, Integer semestre) {
+        List<Material> aprobados;
+        try (EntityManager em = JpaUtil.createEntityManager()) {
+            aprobados = em.createQuery(
+                            "SELECT m FROM Material m WHERE m.estado = :estado ORDER BY m.fechaEnvio DESC",
+                            Material.class)
+                    .setParameter("estado", EstadoMaterial.APROBADO)
+                    .getResultList();
+        }
+
+        String materia = codigoMateria == null ? "" : codigoMateria.trim();
+        return aprobados.stream()
+                .filter(m -> carrera == null || carrera == m.getCarreraEfectiva())
+                .filter(m -> materia.isBlank() || materia.equalsIgnoreCase(m.getIdMateria()))
+                .filter(m -> semestre == null || semestre.equals(m.getSemestreEfectivo()))
+                .toList();
     }
 }

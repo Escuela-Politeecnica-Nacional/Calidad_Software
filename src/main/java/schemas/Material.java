@@ -1,6 +1,9 @@
 package schemas;
 
+import Enums.Carrera;
+import Enums.CategoriaMaterial;
 import Enums.EstadoMaterial;
+import Enums.MateriasCatalogo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,6 +58,42 @@ public class Material {
     @Column(name = "usuario_subio")
     private String usuario;
 
+    @Column(name = "id_tutor")
+    private Long idTutor;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "carrera")
+    private Carrera carrera;
+
+    @Column(name = "semestre")
+    private Integer semestre;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria")
+    private CategoriaMaterial categoria;
+
     @Column(name = "motivo_rechazo", columnDefinition = "TEXT")
     private String motivoRechazo;
+
+    public Carrera getCarreraEfectiva() {
+        if (carrera != null) {
+            return carrera;
+        }
+        return MateriasCatalogo.buscarPorCodigo(idMateria)
+                .map(MateriasCatalogo.Opcion::getCarrera)
+                .orElse(null);
+    }
+
+    public Integer getSemestreEfectivo() {
+        if (semestre != null) {
+            return semestre;
+        }
+        return MateriasCatalogo.buscarPorCodigo(idMateria)
+                .map(MateriasCatalogo.Opcion::getSemestre)
+                .orElse(null);
+    }
+
+    public String getCategoriaNombre() {
+        return categoria == null ? "Documento académico" : categoria.getNombre();
+    }
 }

@@ -11,6 +11,7 @@
         <class>schemas.Estudiante</class>
         <class>schemas.Tutor</class>
         <class>schemas.Material</class>
+        <class>schemas.AdquisicionMaterial</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
@@ -25,4 +26,3 @@
         </properties>
     </persistence-unit>
 </persistence>
-

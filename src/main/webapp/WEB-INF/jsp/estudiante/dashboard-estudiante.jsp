@@ -65,6 +65,16 @@
             <span class="material-symbols-outlined">search</span>
             Buscar Tutor
         </a>
+        <a href="${pageContext.request.contextPath}/estudiante/marketplace"
+           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-all">
+            <span class="material-symbols-outlined">storefront</span>
+            Marketplace
+        </a>
+        <a href="${pageContext.request.contextPath}/estudiante/biblioteca"
+           class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-all">
+            <span class="material-symbols-outlined">local_library</span>
+            Mi Biblioteca
+        </a>
         <%-- Mi Perfil --%>
         <a href="${pageContext.request.contextPath}/perfil"
            class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-slate-100 transition-all">
@@ -140,8 +150,20 @@
             <%-- Grid principal --%>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                <%-- Columna izquierda: reservada para secciones futuras --%>
-                <div class="lg:col-span-8"></div>
+                <div class="lg:col-span-8 grid gap-5 sm:grid-cols-2">
+                    <a href="${pageContext.request.contextPath}/estudiante/marketplace"
+                       class="bg-white rounded-2xl border border-slate-100 p-7 shadow-sm hover:shadow-lg transition-all">
+                        <span class="material-symbols-outlined text-4xl text-indigo-600">storefront</span>
+                        <h3 class="mt-4 text-xl font-extrabold">Marketplace académico</h3>
+                        <p class="mt-2 text-sm text-slate-500">Explora materiales aprobados por carrera, materia y semestre.</p>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/estudiante/biblioteca"
+                       class="bg-white rounded-2xl border border-slate-100 p-7 shadow-sm hover:shadow-lg transition-all">
+                        <span class="material-symbols-outlined text-4xl text-emerald-600">local_library</span>
+                        <h3 class="mt-4 text-xl font-extrabold">Mi biblioteca digital</h3>
+                        <p class="mt-2 text-sm text-slate-500">Consulta de forma segura todos los documentos que has adquirido.</p>
+                    </a>
+                </div>
 
                 <%-- Columna derecha: tarjeta de acción --%>
                 <aside class="lg:col-span-4">
@@ -183,13 +205,13 @@
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24">home</span>
         <span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Inicio</span>
     </a>
-    <a href="#" class="flex flex-col items-center justify-center text-slate-400">
-        <span class="material-symbols-outlined">search</span>
-        <span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Buscar</span>
+    <a href="${pageContext.request.contextPath}/estudiante/marketplace" class="flex flex-col items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined">storefront</span>
+        <span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Materiales</span>
     </a>
-    <a href="#" class="flex flex-col items-center justify-center text-slate-400">
-        <span class="material-symbols-outlined">event_note</span>
-        <span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Sesiones</span>
+    <a href="${pageContext.request.contextPath}/estudiante/biblioteca" class="flex flex-col items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined">local_library</span>
+        <span class="text-[10px] font-bold mt-1 uppercase tracking-tighter">Biblioteca</span>
     </a>
     <a href="${pageContext.request.contextPath}/logout"
        class="flex flex-col items-center justify-center text-slate-400 hover:text-red-500">
